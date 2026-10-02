@@ -37,7 +37,7 @@ describe("CartContext removeFromCart", () => {
 
     expect(localStorage.getItem("itemCount")).toBe("1");
     expect(localStorage.getItem("totalPrice")).toBe("50");
-    expect((JSON.parse(localStorage.getItem("cartItems") || "{}").items || [])).toHaveLength(1);
+    expect(JSON.parse(localStorage.getItem("cartItems") || "{}").items || []).toHaveLength(1);
   });
 
   it("leaves itemCount and totalPrice unchanged when removing an item not in the cart", () => {
@@ -246,7 +246,7 @@ describe("CartContext removeFromCart", () => {
     expect(result.current.cartItems).toHaveLength(2);
     expect(result.current.itemCount).toBe(2);
     expect(result.current.totalPrice).toBe(100);
-    expect(JSON.parse(localStorage.getItem("cartItems") || "[]")).toHaveLength(2);
+    expect(JSON.parse(localStorage.getItem("cartItems") || "{}").items || []).toHaveLength(2);
   });
 
   it("refuses a value-only match when several duplicates share the product id", () => {
