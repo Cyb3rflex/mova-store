@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/react";
@@ -36,6 +35,11 @@ const ORDER = {
   items: [],
 };
 
+/** `fetchBuyerOrders` now reports where the rows came from, not just the rows. */
+function result(orders: unknown[], overrides: Record<string, unknown> = {}) {
+  return { orders, source: "server", stale: false, error: null, ...overrides };
+}
+
 describe("Buyer orders page states", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -43,7 +47,7 @@ describe("Buyer orders page states", () => {
   });
 
   it("renders the order list when the fetch succeeds", async () => {
-    mockFetchBuyerOrders.mockResolvedValue([ORDER]);
+    mockFetchBuyerOrders.mockResolvedValue(result([ORDER]));
 
     render(<BuyerOrdersPage />);
 
@@ -63,7 +67,7 @@ describe("Buyer orders page states", () => {
   });
 
   it("renders the empty state when there are no orders", async () => {
-    mockFetchBuyerOrders.mockResolvedValue([]);
+    mockFetchBuyerOrders.mockResolvedValue(result([]));
 
     render(<BuyerOrdersPage />);
 
@@ -72,7 +76,7 @@ describe("Buyer orders page states", () => {
   });
 
   it("re-reads the orders when the tab regains focus", async () => {
-    mockFetchBuyerOrders.mockResolvedValue([]);
+    mockFetchBuyerOrders.mockResolvedValue(result([]));
 
     render(<BuyerOrdersPage />);
     await waitFor(() => expect(mockFetchBuyerOrders).toHaveBeenCalledTimes(1));

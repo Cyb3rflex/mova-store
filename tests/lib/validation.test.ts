@@ -11,8 +11,20 @@ import {
   validateCity,
   validatePostalCode,
   validateProductName,
+  validateCardNumber,
+  validateCardExpiry,
+  validateCardCVV,
   validateForm,
 } from "../../lib/validation";
+
+/** Format a card expiry a fixed number of years into the future as MM/YY. */
+function futureExpiry(yearsAhead: number): string {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + yearsAhead);
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = String(d.getFullYear() % 100).padStart(2, "0");
+  return month + "/" + year;
+}
 
 describe("sanitizeText", () => {
   it("removes null bytes and control characters", () => {
@@ -273,5 +285,40 @@ describe("validateProductName", () => {
     const res = validateProductName("P".repeat(201));
     expect(res.isValid).toBe(false);
     expect(res.error).toBe("Product name is too long");
+  });
+});
+
+describe("validateCardNumber", () => {
+  it("applies the Luhn check to a valid card number", () => {
+    expect(validateCardNumber("4242 4242 4242 4242")).toEqual({
+      isValid: true,
+      sanitized: "4242424242424242",
+    });
+  });
+
+  it("rejects a number that fails the Luhn check", () => {
+    expect(validateCardNumber("4242424242424241").isValid).toBe(false);
+  });
+});
+
+describe("validateCardExpiry", () => {
+  it("accepts a future date and returns it as MM/YY", () => {
+    const result = validateCardExpiry(futureExpiry(5));
+    expect(result.isValid).toBe(true);
+    expect(result.sanitized).toMatch(/^\d{2}\/\d{2}$/);
+  });
+
+  it("rejects a past date", () => {
+    expect(validateCardExpiry("01/20").isValid).toBe(false);
+  });
+});
+
+describe("validateCardCVV", () => {
+  it("accepts three or four digits", () => {
+    expect(validateCardCVV("123")).toEqual({ isValid: true, sanitized: "123" });
+  });
+
+  it("rejects anything shorter than three digits", () => {
+    expect(validateCardCVV("12").isValid).toBe(false);
   });
 });
